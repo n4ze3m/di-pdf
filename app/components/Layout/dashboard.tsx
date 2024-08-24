@@ -40,12 +40,12 @@ export default function Dashboard({
               <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div className="flex h-16 justify-between">
                   <div className="flex">
-                    <div className="flex flex-shrink-0 items-center">
+                    <Link to="/dashboard" className="flex flex-shrink-0 items-center">
                       <Logo gradientSize="size-8" iconSize="size-5" />
                       <span className="ml-2 text-2xl font-bold text-gray-900">
                         DiPDF
                       </span>
-                    </div>
+                    </Link>
                     <div className="hidden sm:-my-px sm:ml-6 sm:flex sm:space-x-8">
                       {navigation.map((item) => (
                         <Link
