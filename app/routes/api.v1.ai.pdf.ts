@@ -1,6 +1,5 @@
 import { withAuthAction } from "~/lib/with-auth";
 import puppeteer from "puppeteer"
-import { z } from "zod";
 import { db } from "~/lib/db.server";
 import { json } from "@remix-run/node";
 import { compileTemplate } from "~/lib/compile-hb";
@@ -57,16 +56,18 @@ export const action = withAuthAction(async ({ request, userId }) => {
     const browser = await puppeteer.launch({
         headless: true,
         args: ['--no-sandbox', '--disable-setuid-sandbox'],
+        timeout: 60000, // Increase timeout to 60 seconds
     });
 
     const page = await browser.newPage();
 
     await page.setViewport({ width: 1200, height: 1200 });
 
-    await page.setContent(html);
+    await page.setContent(html, { waitUntil: 'networkidle0', timeout: 60000 });
 
     const pdf = await page.pdf({
         format: "A4",
+        timeout: 60000,
     });
     await browser.close();
 
