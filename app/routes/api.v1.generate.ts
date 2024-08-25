@@ -107,3 +107,12 @@ export const action = async ({
         })
 
 }
+
+  export const loader = async () => {
+      return new Response("Method Not Allowed", {
+          status: 405,
+          headers: {
+              "Allow": "POST"
+          }
+      })
+  }
