@@ -1,40 +1,61 @@
-# Welcome to Remix!
+# DiPDF
+## Overview
 
-- 📖 [Remix docs](https://remix.run/docs)
+DiPDF is an AI-powered tool for efficient PDF generation, leveraging the IBM WatsonX Granite model. This repository includes a Docker setup for easy deployment.
 
-## Development
+## Prerequisites
 
-Run the dev server:
+- Docker
+- IBM Wastonx API Key
 
-```shellscript
-npm run dev
+## Setup
+
+### Step 1: Clone the Repository
+
+```bash
+git clone https://github.com/n4ze3m/dipdf.git
+cd dipdf
 ```
 
-## Deployment
+### Step 2: Create a `.env` File
 
-First, build your app for production:
+Create a `.env` file in the root of the project with the following environment variables:
 
-```sh
-npm run build
+```env
+# .env
+
+POSTGRES_URL=your_postgres_connection_url
+IBM_API_KEY=
+IBM_PROJECT_ID=
+IBM_MODEL_ID=
 ```
 
-Then run the app in production mode:
+Replace with your actual values.
 
-```sh
-npm start
+### Step 3: Build the Docker Image
+
+```bash
+docker build -t dipdf-image .
 ```
 
-Now you'll need to pick a host to deploy it to.
+This command builds the Docker image with the tag `dipdf-image`.
 
-### DIY
+### Step 4: Run the Docker Container
 
-If you're familiar with deploying Node applications, the built-in Remix app server is production-ready.
+```bash
+docker run --env-file .env -p 8080:8080 dipdf-image
+```
 
-Make sure to deploy the output of `npm run build`
+This command runs the container, passing in the `.env` file and mapping port `8080` (or your preferred port) to the container.
 
-- `build/server`
-- `build/client`
+### Step 5: Access the Application
 
-## Styling
+Once the container is running, you can access the application at `http://localhost:8080`.
 
-This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience. You can use whatever css framework you prefer. See the [Vite docs on css](https://vitejs.dev/guide/features.html#css) for more information.
+## Contributing
+
+Contributions are welcome! Please fork this repository, create a new branch, and submit a pull request.
+
+## License
+
+This project is licensed under the MIT License.
