@@ -7,14 +7,15 @@ import {
 } from "lucide-react";
 import { Logo } from "~/components/common/Logo";
 import { Button } from "~/components/ui/button";
-import { Link } from "@remix-run/react";
+import { Link, useNavigate } from "@remix-run/react";
 export const meta: any = () => {
   return [
     { title: "DiPDF" },
     { name: "description", content: "DiPDF application " },
-  ]
+  ];
 };
 export default function LandingPage() {
+  const navigate = useNavigate();
   return (
     <div className="flex flex-col min-h-screen">
       <header className="px-4 lg:px-6 h-14 flex items-center">
@@ -44,8 +45,13 @@ export default function LandingPage() {
                 custom templates. Open-source and powerful.
               </p>
               <div className="space-x-4">
-                <Button>Get Started</Button>
-                <Button variant="outline">
+                <Button onClick={() => navigate("/dashboard")}>
+                  Get Started
+                </Button>
+                <Button
+                  onClick={() => window.open("https://github.com/n4ze3m/di-pdf", "_blank")}
+                  variant="outline"
+                >
                   <GithubIcon className="mr-2 h-4 w-4" />
                   View on GitHub
                 </Button>
@@ -146,9 +152,11 @@ export default function LandingPage() {
                 with ease.
               </p>
               <div className="w-full max-w-sm space-y-2">
-                <form className="flex justify-center">
-                  <Button type="submit">Get Started</Button>
-                </form>
+                <div className="flex justify-center">
+                  <Button onClick={() => navigate("/dashboard")}>
+                    Get Started
+                  </Button>
+                </div>
               </div>
             </div>
           </div>

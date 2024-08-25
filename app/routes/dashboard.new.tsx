@@ -106,9 +106,9 @@ export default function NewDashboard() {
 
           <div className="flex flex-wrap justify-center gap-3">
             {[
-              "Generate a report on renewable energy trends",
-              "Create a marketing brochure for a new product",
-              "Design an educational booklet on financial literacy",
+              "Generate an invoice for client services",
+              "Create a business agreement for a new partnership",
+              "Create an emplyment contract for a new employee",
             ].map((example, index) => (
               <Button
                 key={index}
