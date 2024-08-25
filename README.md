@@ -13,7 +13,7 @@ DiPDF is an AI-powered tool for efficient PDF generation, leveraging the IBM Wat
 ### Step 1: Clone the Repository
 
 ```bash
-git clone https://github.com/n4ze3m/dipdf.git
+git clone https://github.com/n4ze3m/di-pdf.git
 cd dipdf
 ```
 
