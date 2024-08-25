@@ -8,7 +8,12 @@ import {
 import { Logo } from "~/components/common/Logo";
 import { Button } from "~/components/ui/button";
 import { Link } from "@remix-run/react";
-
+export const meta: any = () => {
+  return [
+    { title: "DiPDF" },
+    { name: "description", content: "DiPDF application " },
+  ]
+};
 export default function LandingPage() {
   return (
     <div className="flex flex-col min-h-screen">

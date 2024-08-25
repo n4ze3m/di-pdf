@@ -1,4 +1,4 @@
-import { json, redirect } from "@remix-run/node";
+import { json, MetaFunction, redirect } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import DynamicForm from "~/components/DynamicForm";
 import Dashboard from "~/components/Layout/dashboard";
@@ -11,6 +11,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { Textarea } from "~/components/ui/textarea";
 import { Button } from "~/components/ui/button";
 
+
+export const meta: MetaFunction = () => {
+  return [
+    { title: "Playground | DiPDF" },
+    { name: "description", content: "Playground for DiPDF"}
+  ];
+};
 function getDomainUrl(request: Request) {
   const host =
     request.headers.get("X-Forwarded-Host") ??

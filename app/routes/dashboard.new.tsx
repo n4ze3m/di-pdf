@@ -4,11 +4,16 @@ import { Card, CardContent } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import Dashboard from "~/components/Layout/dashboard";
 import { withAuth } from "~/lib/with-auth";
-import { json } from "@remix-run/node";
+import { json, MetaFunction } from "@remix-run/node";
 import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "@remix-run/react";
 import toast from "react-hot-toast";
-
+export const meta: MetaFunction = () => {
+  return [
+    { title: "Create New PDF | DiPDF" },
+    { name: "description", content: "Dashbaord for DiPDF" },
+  ]
+};
 export const loader = withAuth(async (args) => {
   return json({});
 });

@@ -4,7 +4,12 @@ import Dashboard from "~/components/Layout/dashboard";
 import { Card, CardContent, CardTitle } from "~/components/ui/card";
 import { db } from "~/lib/db.server";
 import { withAuth } from "~/lib/with-auth";
-
+export const meta: any = () => {
+  return [
+    { title: "Dashboard | DiPDF" },
+    { name: "description", content: "Dashbaord for DiPDF" },
+  ]
+};
 export const loader = withAuth(async ({ userId }) => {
   const docs = await db.document.findMany({
     select: {
