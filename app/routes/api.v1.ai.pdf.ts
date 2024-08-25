@@ -56,18 +56,19 @@ export const action = withAuthAction(async ({ request, userId }) => {
     const browser = await puppeteer.launch({
         headless: true,
         args: ['--no-sandbox', '--disable-setuid-sandbox'],
-        timeout: 60000, // Increase timeout to 60 seconds
+        timeout: 120000, // Increase timeout to 120 seconds
+        protocolTimeout: 120000 // Add protocolTimeout and set it to 120 seconds
     });
 
     const page = await browser.newPage();
 
     await page.setViewport({ width: 1200, height: 1200 });
 
-    await page.setContent(html, { waitUntil: 'networkidle0', timeout: 60000 });
+    await page.setContent(html, { waitUntil: 'networkidle0', timeout: 120000 });
 
     const pdf = await page.pdf({
         format: "A4",
-        timeout: 60000,
+        timeout: 120000,
     });
     await browser.close();
 
