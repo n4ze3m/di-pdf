@@ -40,7 +40,10 @@ export default function Dashboard({
               <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div className="flex h-16 justify-between">
                   <div className="flex">
-                    <Link to="/dashboard" className="flex flex-shrink-0 items-center">
+                    <Link
+                      to="/dashboard"
+                      className="flex flex-shrink-0 items-center"
+                    >
                       <Logo gradientSize="size-8" iconSize="size-5" />
                       <span className="ml-2 text-2xl font-bold text-gray-900">
                         DiPDF
@@ -170,13 +173,15 @@ export default function Dashboard({
         </Disclosure>
 
         <div className="py-10">
-          <header>
-            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-              <h1 className="text-3xl font-bold leading-tight tracking-tight text-gray-900">
-                {title}
-              </h1>
-            </div>
-          </header>
+          {title.length > 0 && (
+            <header>
+              <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                <h1 className="text-3xl font-bold leading-tight tracking-tight text-gray-900">
+                  {title}
+                </h1>
+              </div>
+            </header>
+          )}
           <main>
             <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">{children}</div>
           </main>

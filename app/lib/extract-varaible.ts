@@ -141,7 +141,7 @@ export const extractSchema = (
 
 export const schemaToJson = (schema: Schema): any => {
     if (schema._type === "any") {
-        return "";
+        return "[" + schema._type + "]";
     }
     const keys = Object.keys(schema).filter(
         (key) => key !== "_optional" && key !== "_type" && key !== "#"
@@ -150,12 +150,12 @@ export const schemaToJson = (schema: Schema): any => {
     for (const k of keys) {
         const key = schema[k] as Schema;
         if (key._type === "any") {
-            obj[k] = "";
+            obj[k] = "[" + k.toUpperCase() + "]";
         } else if (key._type === "object") {
             obj[k] = schemaToJson(key);
         } else if (key._type === "array") {
             if (key["#"]?._type === "any") {
-                obj[k] = [""];
+                obj[k] = [ "[" + k.toUpperCase() + "]" ];
             } else if (key["#"]?._type === "object") {
                 obj[k] = [schemaToJson(key["#"] as Schema)];
             } else {
@@ -165,4 +165,17 @@ export const schemaToJson = (schema: Schema): any => {
     }
     return obj;
 };
-``
+
+
+export const generateJson  = (
+    html: string 
+) => {
+    try {
+        const schema = extractSchema(html);
+        const json = schemaToJson(schema);
+        return json;
+    } catch (err) {
+        console.error(err);
+        return {};
+    }
+}

@@ -3,11 +3,21 @@ import { ArrowUpIcon } from "lucide-react";
 import { Card, CardContent } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import Dashboard from "~/components/Layout/dashboard";
+import { withAuth } from "~/lib/with-auth";
+import { json } from "@remix-run/node";
+import { useMutation } from "@tanstack/react-query";
+import { useNavigate } from "@remix-run/react";
+import toast from "react-hot-toast";
 
+export const loader = withAuth(async (args) => {
+  return json({});
+});
 export default function NewDashboard() {
   const [prompt, setPrompt] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const maxLength = 500;
+  const maxLength = 800;
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -16,9 +26,30 @@ export default function NewDashboard() {
     }
   }, [prompt]);
 
-  const handleGenerate = () => {
-    console.log("Generating PDF with prompt:", prompt);
-  };
+  const { mutate: handleGenerate, isPending: isGenerating } = useMutation({
+    mutationFn: async () => {
+      const res = await fetch("/api/v1/ai/create", {
+        method: "POST",
+        body: JSON.stringify({
+          prompt,
+        }),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err?.error || err?.message || "Something went wrong");
+      }
+      return (await res.json()) as {
+        id: string;
+      };
+    },
+    onError: (err) => {
+      toast.error(err.message);
+    },
+    onSuccess: (data) => {
+      toast.success("PDF generated successfully");
+      navigate(`/dashboard/doc/${data.id}`);
+    },
+  });
 
   return (
     <Dashboard title="">
@@ -44,18 +75,24 @@ export default function NewDashboard() {
                   className="w-full min-h-[100px] text-lg p-4 pb-10  border-0 focus:ring-0 resize-none bg-transparent outline-none"
                 />
                 <div className="absolute bottom-2 left-4 text-sm text-gray-400 flex items-center justify-between w-full pr-4">
-                  <span>{prompt.length}/{maxLength}</span>
+                  <span>
+                    {prompt.length}/{maxLength}
+                  </span>
                   <Button
-                    onClick={handleGenerate}
+                    onClick={async () => {
+                      await handleGenerate();
+                    }}
                     className={`bg-gradient-to-r  from-gray-600 to-gray-800 text-white rounded-full transition-all duration-300 ease-in-out ${
                       prompt
                         ? "opacity-100 translate-y-0"
                         : "opacity-0 translate-y-2"
                     }`}
-                    disabled={!prompt}
+                    disabled={!prompt || isGenerating}
                   >
                     <ArrowUpIcon className="size-5" />
-                    <span className="ml-2 hidden md:inline">Send</span>
+                    <span className="ml-2 hidden md:inline">
+                      {isGenerating ? "Generating..." : "Generate"}
+                    </span>
                   </Button>
                 </div>
               </div>

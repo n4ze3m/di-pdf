@@ -5,10 +5,16 @@ import {
   Scripts,
   ScrollRestoration,
 } from "@remix-run/react";
-import '@fontsource-variable/inter';
+import "@fontsource-variable/inter";
 import "./tailwind.css";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import React from "react";
+import { Toaster } from "react-hot-toast";
 
 export function Layout({ children }: { children: React.ReactNode }) {
+  const [client] = React.useState(
+    new QueryClient({ defaultOptions: { queries: { staleTime: 5000 } } })
+  );
   return (
     <html lang="en">
       <head>
@@ -18,9 +24,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
-        {children}
-        <ScrollRestoration />
-        <Scripts />
+        <QueryClientProvider client={client}>
+          {children}
+          <ScrollRestoration />
+          <Scripts />
+          <Toaster />
+        </QueryClientProvider>
       </body>
     </html>
   );

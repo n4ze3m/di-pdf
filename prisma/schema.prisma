@@ -14,21 +14,26 @@ datasource db {
 }
 
 model User {
-  id         String   @id @default(cuid())
+  id         String     @id @default(cuid())
   name       String
   email      String
   password   String
-  api_key    String   @unique
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  api_key    String     @unique
+  created_at DateTime   @default(now())
+  documents   Document[]
+  updated_at DateTime   @updatedAt
 }
 
 model Document {
-  id             String   @id @default(cuid())
-  title          String   @default("Untitled")
-  total_versions Int      @default(1)
-  created_at     DateTime @default(now())
-  updated_at     DateTime @updatedAt
+  id             String            @id @default(cuid())
+  title          String            @default("Untitled")
+  total_versions Int               @default(1)
+  active_version Int               @default(1)
+  docs           DocumentVersion[]
+  user_id        String
+  user           User              @relation(fields: [user_id], references: [id])
+  created_at     DateTime          @default(now())
+  updated_at     DateTime          @updatedAt
 }
 
 model DocumentVersion {
@@ -38,6 +43,7 @@ model DocumentVersion {
   html           String
   variables      Json?
   active         Boolean  @default(false)
+  document       Document @relation(fields: [document_id], references: [id])
   created_at     DateTime @default(now())
   updated_at     DateTime @updatedAt
 }

@@ -1,111 +1,75 @@
-import React, { useState } from 'react';
-import { Form } from "~/components/ui/form";
+import React, { useState, useEffect } from "react";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
-import { Label } from '../ui/label';
+import { Label } from "../ui/label";
 
 interface Schema {
-  [key: string]: string | number | boolean | Schema | (string | number | boolean)[] | Schema[];
+  [key: string]:
+    | string
+    | number
+    | boolean
+    | Schema
+    | (string | number | boolean)[]
+    | Schema[];
 }
 
 interface DynamicFormProps {
   schema: Schema;
+  initialData?: Schema;
   onSubmit: (data: Schema) => void;
 }
 
-const DynamicForm: React.FC<DynamicFormProps> = ({ schema, onSubmit }) => {
-  const [formData, setFormData] = useState<Record<string, any>>({});
+const DynamicForm: React.FC<DynamicFormProps> = ({
+  schema,
+  initialData,
+  onSubmit,
+}) => {
+  const [formData, setFormData] = useState<Schema>({});
+
+  useEffect(() => {
+    setFormData(initialData || {});
+  }, [initialData]);
 
   const handleChange = (path: string, value: any) => {
-    const updatedFormData = { ...formData };
-    const keys = path.split(".");
-    let nestedData = updatedFormData;
+    setFormData((prevData) => {
+      const updatedData = { ...prevData };
+      const keys = path.split(".");
+      let current = updatedData;
 
-    keys.forEach((key, index) => {
-      if (index === keys.length - 1) {
-        nestedData[key] = value;
-      } else {
-        nestedData = nestedData[key] = nestedData[key] || {};
+      for (let i = 0; i < keys.length - 1; i++) {
+        if (!current[keys[i]]) {
+          current[keys[i]] = {};
+        }
+        current = current[keys[i]] as Schema;
       }
-    });
 
-    setFormData(updatedFormData);
+      current[keys[keys.length - 1]] = value;
+      return updatedData;
+    });
   };
 
   const renderForm = (schema: Schema, path: string = ""): JSX.Element[] => {
     return Object.entries(schema).map(([key, value]) => {
       const currentPath = path ? `${path}.${key}` : key;
 
-      if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+      if (
+        typeof value === "string" ||
+        typeof value === "number" ||
+        typeof value === "boolean"
+      ) {
         return (
           <div key={currentPath} className="space-y-2">
             <Label htmlFor={currentPath}>{key}</Label>
             <Input
               id={currentPath}
-              type="text"
-              value={formData[currentPath] || ""}
+              type={typeof value === "number" ? "number" : "text"}
+              value={getNestedValue(formData, currentPath) || ""}
               onChange={(e) => handleChange(currentPath, e.target.value)}
             />
           </div>
         );
       } else if (Array.isArray(value)) {
-        // Check if the array contains primitive values (string, number, boolean)
-        if (typeof value[0] === "string" || typeof value[0] === "number" || typeof value[0] === "boolean") {
-          return (
-            <div key={currentPath} className="space-y-2">
-              <Label>{key}</Label>
-              {(formData[currentPath] || []).map((item: any, index: number) => (
-                <div key={`${currentPath}.${index}`} className="flex space-x-2">
-                  <Input
-                    type="text"
-                    value={item || ""}
-                    onChange={(e) => handlePrimitiveArrayChange(currentPath, index, e.target.value)}
-                  />
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    onClick={() => handleRemovePrimitiveArrayItem(currentPath, index)}
-                  >
-                    Remove
-                  </Button>
-                </div>
-              ))}
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={() => handleAddPrimitiveArrayItem(currentPath)}
-              >
-                Add {key}
-              </Button>
-            </div>
-          );
-        } else {
-          // Render for array of objects (Schema[])
-          return (
-            <div key={currentPath} className="space-y-2">
-              <Label>{key}</Label>
-              {(formData[currentPath] || []).map((item: any, index: number) => (
-                <div key={`${currentPath}.${index}`} className="space-y-2">
-                  {renderForm(value[0] as Schema, `${currentPath}.${index}`)}
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    onClick={() => handleRemoveNode(currentPath, index)}
-                  >
-                    Remove
-                  </Button>
-                </div>
-              ))}
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={() => handleAddNode(currentPath, value[0] as Schema)}
-              >
-                Add {key}
-              </Button>
-            </div>
-          );
-        }
+        return renderArrayField(key, value, currentPath);
       } else {
         return (
           <div key={currentPath} className="space-y-2">
@@ -117,87 +81,115 @@ const DynamicForm: React.FC<DynamicFormProps> = ({ schema, onSubmit }) => {
     });
   };
 
-  const handlePrimitiveArrayChange = (path: string, index: number, value: any) => {
-    const updatedFormData = { ...formData };
-    const keys = path.split(".");
-    let nestedData = updatedFormData;
+  const renderArrayField = (key: string, value: any[], currentPath: string) => {
+    const arrayValue = (getNestedValue(formData, currentPath) as any[]) || [];
 
-    keys.forEach((key, i) => {
-      if (i === keys.length - 1) {
-        if (!nestedData[key]) nestedData[key] = [];
-        nestedData[key][index] = value;
-      } else {
-        nestedData = nestedData[key] = nestedData[key] || {};
-      }
-    });
-
-    setFormData(updatedFormData);
+    return (
+      <div key={currentPath} className="space-y-2">
+        <Label>{key}</Label>
+        {arrayValue.map((item, index) => (
+          <div key={`${currentPath}.${index}`} className="flex space-x-2">
+            {typeof item !== "object" ? (
+              <Input
+                type="text"
+                value={item || ""}
+                onChange={(e) =>
+                  handleArrayItemChange(currentPath, index, e.target.value)
+                }
+              />
+            ) : (
+              <div className="space-y-2">
+                {renderForm(value[0] as Schema, `${currentPath}.${index}`)}
+              </div>
+            )}
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={() => handleRemoveArrayItem(currentPath, index)}
+            >
+              Remove
+            </Button>
+          </div>
+        ))}
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={() => handleAddArrayItem(currentPath, value[0])}
+        >
+          Add {key}
+        </Button>
+      </div>
+    );
   };
 
-  const handleAddPrimitiveArrayItem = (path: string) => {
-    const updatedFormData = { ...formData };
-    const keys = path.split(".");
-    let nestedData = updatedFormData;
-
-    keys.forEach((key, index) => {
-      if (index === keys.length - 1) {
-        if (!nestedData[key]) nestedData[key] = [];
-        nestedData[key].push("");
-      } else {
-        nestedData = nestedData[key] = nestedData[key] || {};
-      }
-    });
-
-    setFormData(updatedFormData);
+  const getNestedValue = (obj: any, path: string) => {
+    return path.split(".").reduce((prev, curr) => prev && prev[curr], obj);
   };
 
-  const handleRemovePrimitiveArrayItem = (path: string, index: number) => {
-    const updatedFormData = { ...formData };
-    const keys = path.split(".");
-    let nestedData = updatedFormData;
+  const handleArrayItemChange = (path: string, index: number, value: any) => {
+    setFormData((prevData) => {
+      const updatedData = { ...prevData };
+      const arrayPath = path.split(".");
+      let current = updatedData;
 
-    keys.forEach((key, i) => {
-      if (i === keys.length - 1) {
-        nestedData[key].splice(index, 1);
-      } else {
-        nestedData = nestedData[key] = nestedData[key] || {};
+      for (let i = 0; i < arrayPath.length - 1; i++) {
+        if (!current[arrayPath[i]]) {
+          current[arrayPath[i]] = {};
+        }
+        current = current[arrayPath[i]] as Schema;
       }
-    });
 
-    setFormData(updatedFormData);
+      if (!Array.isArray(current[arrayPath[arrayPath.length - 1]])) {
+        current[arrayPath[arrayPath.length - 1]] = [];
+      }
+
+      (current[arrayPath[arrayPath.length - 1]] as any[])[index] = value;
+      return updatedData;
+    });
   };
 
-  const handleAddNode = (path: string, schema: Schema) => {
-    const updatedFormData = { ...formData };
-    const keys = path.split(".");
-    let nestedData = updatedFormData;
+  const handleAddArrayItem = (path: string, schemaItem: any) => {
+    setFormData((prevData) => {
+      const updatedData = { ...prevData };
+      const arrayPath = path.split(".");
+      let current = updatedData;
 
-    keys.forEach((key, index) => {
-      if (index === keys.length - 1) {
-        if (!nestedData[key]) nestedData[key] = [];
-        nestedData[key].push({});
-      } else {
-        nestedData = nestedData[key] = nestedData[key] || {};
+      for (let i = 0; i < arrayPath.length - 1; i++) {
+        if (!current[arrayPath[i]]) {
+          current[arrayPath[i]] = {};
+        }
+        current = current[arrayPath[i]] as Schema;
       }
-    });
 
-    setFormData(updatedFormData);
+      if (!Array.isArray(current[arrayPath[arrayPath.length - 1]])) {
+        current[arrayPath[arrayPath.length - 1]] = [];
+      }
+
+      const newItem = typeof schemaItem === "object" ? {} : "";
+      (current[arrayPath[arrayPath.length - 1]] as any[]).push(newItem);
+      return updatedData;
+    });
   };
 
-  const handleRemoveNode = (path: string, index: number) => {
-    const updatedFormData = { ...formData };
-    const keys = path.split(".");
-    let nestedData = updatedFormData;
+  const handleRemoveArrayItem = (path: string, index: number) => {
+    setFormData((prevData) => {
+      const updatedData = { ...prevData };
+      const arrayPath = path.split(".");
+      let current = updatedData;
 
-    keys.forEach((key, i) => {
-      if (i === keys.length - 1) {
-        nestedData[key].splice(index, 1);
-      } else {
-        nestedData = nestedData[key] = nestedData[key] || {};
+      for (let i = 0; i < arrayPath.length - 1; i++) {
+        if (!current[arrayPath[i]]) {
+          current[arrayPath[i]] = {};
+        }
+        current = current[arrayPath[i]] as Schema;
       }
-    });
 
-    setFormData(updatedFormData);
+      if (Array.isArray(current[arrayPath[arrayPath.length - 1]])) {
+        (current[arrayPath[arrayPath.length - 1]] as any[]).splice(index, 1);
+      }
+
+      return updatedData;
+    });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -209,7 +201,9 @@ const DynamicForm: React.FC<DynamicFormProps> = ({ schema, onSubmit }) => {
     <form onSubmit={handleSubmit}>
       <div className="space-y-4">
         {renderForm(schema)}
-        <Button type="submit">Submit</Button>
+        <Button className="w-full" type="submit">
+          Preview
+        </Button>
       </div>
     </form>
   );
